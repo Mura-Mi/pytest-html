@@ -48,7 +48,7 @@ def pytest_configure(config):
     htmlpath = config.option.htmlpath
     # prevent opening htmlpath on slave nodes (xdist)
     if htmlpath and not hasattr(config, 'slaveinput'):
-        config._html = HTMLReport(htmlpath)
+        config._html = HTMLReport(htmlpath, config.rootdir)
         config.pluginmanager.register(config._html)
     if hasattr(config, 'slaveoutput'):
         config.slaveoutput['environment'] = config._environment
@@ -79,9 +79,9 @@ def data_uri(content, mime_type='text/plain', charset='utf-8'):
 
 class HTMLReport(object):
 
-    def __init__(self, logfile):
+    def __init__(self, logfile, rootdir):
         logfile = os.path.expanduser(os.path.expandvars(logfile))
-        self.logfile = os.path.abspath(logfile)
+        self.logfile = logfile if os.path.isabs(logfile) else os.path.join(rootdir, logfile)
         self.test_logs = []
         self.errors = self.failed = 0
         self.passed = self.skipped = 0
